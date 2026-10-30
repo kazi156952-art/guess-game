@@ -1,0 +1,488 @@
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>同词相遇</title>
+<style>
+:root {
+--p1: #7c3aed;
+--p2: #06b6d4;
+--bg1: #f5f3ff;
+--bg2: #ecfeff;
+--card: #ffffff;
+--text: #1f2937;
+--muted: #6b7280;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body {
+font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+background: linear-gradient(160deg, #ede9fe 0%, #cffafe 100%);
+min-height: 100vh;
+display: flex;
+justify-content: center;
+align-items: flex-start;
+padding: 16px;
+}
+.app { width: 100%; max-width: 420px; }
+.card {
+background: var(--card);
+border-radius: 20px;
+padding: 24px 20px;
+box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+margin-bottom: 14px;
+}
+h1 { text-align: center; font-size: 22px; color: var(--text); margin-bottom: 4px; }
+.sub { text-align: center; color: var(--muted); font-size: 13px; margin-bottom: 18px; }
+.hidden { display: none !important; }.btn {
+display: block; width: 100%; padding: 14px;
+border: none; border-radius: 14px;
+font-size: 16px; font-weight: 700; cursor: pointer;
+transition: transform .05s, opacity .2s;
+}
+.btn:active { transform: scale(.98); }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn-primary { background: var(--p1); color: #fff; }
+.btn-cyan { background: var(--p2); color: #fff; }
+.btn-ghost { background: #f3f4f6; color: var(--text); margin-top: 10px; }
+
+input {
+width: 100%; padding: 14px;
+border: 2px solid #e5e7eb; border-radius: 14px;
+font-size: 16px; outline: none; text-align: center;
+}
+input:focus { border-color: var(--p1); }
+
+.code {
+font-size: 34px; font-weight: 800; letter-spacing: 8px;
+text-align: center; color: var(--p1);
+background: #f5f3ff; border-radius: 14px; padding: 16px;
+user-select: all; margin: 10px 0;
+}
+
+.label { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+
+.round-head { text-align: center; font-size: 15px; color: var(--text); font-weight: 700; margin-bottom: 10px; }
+
+.prev-banner {
+background: #f9fafb; border-radius: 14px; padding: 12px;
+margin-bottom: 16px; text-align: center;
+}
+.prev-banner .tip { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+.word-row { display: flex; justify-content: space-around; align-items: center; }
+.word-box { text-align: center; min-width: 0; max-width: 45%; }
+.word-box .who { font-size: 12px; font-weight: 700; margin-bottom: 4px; }
+.word-box .word {
+font-size: 17px; font-weight: 700; padding: 8px 12px; border-radius: 10px;
+word-break: break-word; display: inline-block;
+}
+.who.p1, .word-box.p1 .word { color: var(--p1); }
+.who.p2, .word-box.p2 .word { color: var(--p2); }
+.word-box.p1 .word { background: #ede9fe; }
+.word-box.p2 .word { background: #cffafe; }
+.vs { font-size: 13px; color: var(--muted); flex-shrink: 0; margin: 0 8px; }
+
+.status-line { text-align: center; font-size: 13px; color: var(--muted); margin-top: 12px; }
+.status-line .tag { font-weight: 700; color: var(--p2); }
+
+.actions { display: flex; gap: 10px; margin-top: 16px; }
+.actions .btn { flex: 1; }
+
+.history { max-height: 220px; overflow-y: auto; margin-top: 16px; }
+.history-item {
+display: flex; justify-content: space-between; align-items: center;
+padding: 10px 4px; border-bottom: 1px solid #f3f4f6; font-size: 14px;
+}
+.history-item .r { color: var(--muted); font-size: 12px; min-width: 46px; }
+.history-item .w1 { color: var(--p1); font-weight: 600; flex: 1; text-align: right; margin-right: 8px; word-break: break-word; }
+.history-item .w2 { color: var(--p2); font-weight: 600; flex: 1; text-align: left; margin-left: 8px; word-break: break-word; }
+.history-item .mid { color: #d1d5db; font-size: 12px; flex-shrink: 0; }
+
+.toast {
+position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+background: rgba(31,41,55,.92); color: #fff; padding: 10px 18px;
+border-radius: 10px; font-size: 14px; z-index: 99; max-width: 90%;
+}
+
+/* 记录页 */
+table {width: 100%; border-collapse: collapse; font-size: 14px;}
+th { font-size: 12px; color: var (--muted); font-weight: 600; padding: 6px 4px; }
+td { padding: 10px 4px; text-align: center; border-top: 1px solid #f3f4f6; }
+td.wp1 { color: var (--p1); font-weight: 700; }
+td.wp2 { color: var (--p2); font-weight: 700; }
+td.mid { color: #d1d5db; }
+td.mid.win { color: #10b981; }
+.record-meta { text-align: center; color: var (--muted); font-size: 12px; margin-bottom: 12px; }
+.record-tip { text-align: center; color: var (--muted); font-size: 12px; margin-top: 14px; line-height: 1.6; }
+</style>
+
+</head>
+<body>
+<div class="app">    <div id="screen-home" class="card">
+<h1>同词相遇</h1>
+<p class="sub">两个人朝着同一个词靠近</p>
+<button class="btn btn-primary" id="btnCreate">创建房间</button>
+<div style="height:16px"></div>
+<div class="label">输入邀请码加入</div>
+<input id="joinCode" maxlength="4" placeholder="4位邀请码" autocomplete="off">
+<div style="height:10px"></div>
+<button class="btn btn-cyan" id="btnJoin">加入房间</button>
+</div>    <div id="screen-waiting" class="card hidden">
+<h1>等待玩家二</h1>
+<p class="sub">把邀请码发给朋友</p>
+<div class="code" id="waitCode"></div>
+<p class="status-line">你是 <b style="color:#7c3aed">玩家一</b></p>
+<button class="btn btn-ghost" id="btnLeave">退出</button>
+</div>    <div id="screen-game" class="card hidden">    
+    <div id="view-guessing">
+<div class="round-head">第 <span id="roundNum">1</span> 轮</div>
+<div id="prevBanner" class="prev-banner hidden"></div>
+<div class="label" style="text-align:center">输入你想到的词（最多30字）</div>
+<input id="guessInput" maxlength="30" placeholder="输入一个词..." autocomplete="off">
+<div style="height:12px"></div>
+<button class="btn btn-primary" id="btnSubmit">提交</button>
+<div class="status-line" id="guessStatus">
+你是 <span id="myRoleTag" style="font-weight:700"></span>
+</div>
+<div class="status-line" id="oppStatus"></div>
+</div>
+    
+    <div id="view-result" class="hidden">
+<div class="round-head">第 <span id="resultRound">1</span> 轮 · 结果</div>
+<div class="prev-banner">
+<div class="tip">本轮双方答案</div>
+<div class="word-row" id="resultWords"></div>
+</div>
+<div class="actions">
+<button class="btn btn-ghost" id="btnNext">下一轮</button>
+<button class="btn btn-primary" id="btnSame">认为同义</button>
+</div>
+<div class="status-line" id="actionStatus"></div>
+<div class="history" id="historyList"></div>
+</div>  </div>    <div id="screen-victory" class="card hidden">
+<h1>🎉 同词相遇</h1>
+<p class="sub">你们的脑回路相遇了</p>
+<div class="record-meta" id="recordMeta"></div>
+<table>
+<thead><tr><th>轮次</th><th>词语</th><th></th><th>词语</th></tr></thead>
+<tbody id="recordBody"></tbody>
+</table>
+<button class="btn btn-primary" id="btnAgain" style="margin-top:16px">再来一局</button>
+<button class="btn btn-ghost" id="btnLeave2">退出</button>
+<p class="record-tip">表达可以不同，只要想到的是同一个东西<br>📱 可截图保存这张记录</p>
+</div></div><script src="/socket.io/socket.io.js"></script><script>
+const socket = io();
+const S = id => document.getElementById(id);
+
+let roomId = null, role = null;
+let hasSubmitted = false, oppSubmitted = false;
+let myActionVal = null, oppActionVal = null;
+let currentRound = 1;
+
+// ===== 工具 =====
+function show(id) {
+['screen-home','screen-waiting','screen-game','screen-victory'].forEach(x => S(x).classList.toggle('hidden', x !== id));
+}
+function toast(msg) {
+const t = document.createElement('div');
+t.className = 'toast'; t.textContent = msg;
+document.body.appendChild(t);
+setTimeout(() => t.remove(), 2500);
+}
+function myLabel() { return role === 'player1' ? '玩家一' : '玩家二'; }
+function oppLabel() { return role === 'player1' ? '玩家二' : '玩家一'; }
+function colorOf(who) { return who === 'player1' ? 'p1' : 'p2'; }
+
+function renderHistory(history) {
+const box = S('historyList');
+box.innerHTML = '';
+if (!history || history.length === 0) return;
+history.forEach(h => {
+const d = document.createElement('div');
+d.className = 'history-item';
+d.innerHTML = `<span class="r">第${h.round}轮</span>
+<span class="w1">${h.player1}</span>
+<span class="mid">·</span>
+<span class="w2">${h.player2}</span>`;
+box.appendChild(d);
+});
+box.scrollTop = box.scrollHeight;
+}
+
+function renderPrevWords(prev, containerId) {
+const box = S(containerId);
+box.innerHTML = '';
+if (!prev) return;
+box.classList.remove('hidden');
+box.innerHTML = `<div class="tip">上一轮的词</div>
+<div class="word-row">
+<div class="word-box p1">
+<div class="who p1">玩家一</div>
+<span class="word">${prev.player1}</span>
+</div>
+<div class="vs">·</div>
+<div class="word-box p2">
+<div class="who p2">玩家二</div>
+<span class="word">${prev.player2}</span>
+</div>
+</div>`;
+}
+
+function resetGuessing() {
+hasSubmitted = false; oppSubmitted = false;
+myActionVal = null; oppActionVal = null;
+S('guessInput').value = '';
+S('guessInput').disabled = false;
+S('btnSubmit').disabled = false;
+S('guessStatus').innerHTML = `你是 <span style="font-weight:700;color:${role==='player1' ? '#7c3aed' : '#06b6d4'}">${myLabel()}</span>`;
+S('oppStatus').innerHTML = '';
+S('view-guessing').classList.remove('hidden');
+S('view-result').classList.add('hidden');
+}
+
+function showResult(round, w1, w2) {
+S('resultRound').textContent = round;
+S('resultWords').innerHTML = `
+<div class="word-box p1">
+<div class="who p1">玩家一</div>
+<span class="word">${w1}</span>
+</div>
+<div class="vs">·</div>
+<div class="word-box p2">
+<div class="who p2">玩家二</div>
+<span class="word">${w2}</span>
+</div>`;
+S('actionStatus').innerHTML = '';
+S('btnNext').disabled = false;
+S('btnSame').disabled = false;
+S('view-guessing').classList.add('hidden');
+S('view-result').classList.remove('hidden');
+}
+
+// ===== 首页按钮 =====
+S('btnCreate').addEventListener('click', () => {
+localStorage.removeItem('sw_room');
+socket.emit('createRoom');
+});
+
+S('btnJoin').addEventListener('click', () => {
+const code = S('joinCode').value.trim().toUpperCase();
+if (code.length !== 4) return toast('请输入4位邀请码');
+roomId = code;
+role = 'player2';
+localStorage.setItem('sw_room', roomId);
+localStorage.setItem('sw_role', role);
+socket.emit('joinRoom', { roomId });
+});
+
+S('btnLeave').addEventListener('click', () => {
+localStorage.removeItem('sw_room');
+localStorage.removeItem('sw_role');
+location.reload();
+});
+S('btnLeave2').addEventListener('click', () => {
+localStorage.removeItem('sw_room');
+localStorage.removeItem('sw_role');
+location.reload();
+});
+
+// ===== 提交猜测 =====
+S('btnSubmit').addEventListener('click', () => {
+if (hasSubmitted) return;
+const guess = S('guessInput').value.trim();
+if (!guess) return toast('先输入一个词');
+socket.emit('submitGuess', { roomId, guess });
+});
+S('guessInput').addEventListener('keydown', e => {
+if (e.key === 'Enter') S('btnSubmit').click();
+});
+
+// ===== 结果操作 =====
+S('btnNext').addEventListener('click', () => sendAction('next'));
+S('btnSame').addEventListener('click', () => sendAction('same'));
+function sendAction(action) {
+if (myActionVal) return;
+socket.emit('resultAction', { roomId, action });
+}
+
+S('btnAgain').addEventListener('click', () => {
+socket.emit('playAgain', { roomId });
+});
+
+// ===== Socket 事件 =====
+socket.on('roomCreated', data => {
+roomId = data.roomId;
+role = data.role;
+localStorage.setItem('sw_room', roomId);
+localStorage.setItem('sw_role', role);
+S('waitCode').textContent = roomId;
+show('screen-waiting');
+});
+
+socket.on('gameStart', data => {
+currentRound = data.round || 1;
+S('roundNum').textContent = currentRound;
+renderPrevWords(data.previousWords, 'prevBanner');
+if (!data.previousWords) S('prevBanner').classList.add('hidden');
+resetGuessing();
+show('screen-game');
+});
+
+socket.on('guessConfirmed', guess => {
+hasSubmitted = true;
+S('guessInput').value = guess;
+S('guessInput').disabled = true;
+S('btnSubmit').disabled = true;
+S('oppStatus').innerHTML = oppSubmitted
+? `<span class="tag">对方已提交</span>，等待揭晓...`
+: '等待对方提交...';
+});
+
+socket.on('opponentSubmitted', () => {
+oppSubmitted = true;
+S('oppStatus').innerHTML = hasSubmitted
+? `<span class="tag">对方已提交</span>，等待揭晓...`
+: `<span class="tag">对方已提交</span>`;
+});
+
+socket.on('roundResult', data => {
+showResult(data.round, data.player1, data.player2);
+renderHistory(data.history);
+});
+
+socket.on('actionConfirmed', action => {
+myActionVal = action;
+const mine = action === 'same' ? '认为同义' : '下一轮';
+S('actionStatus').innerHTML = `你已选：<b>${mine}</b>${oppActionVal ? '' : '，等待对方...'}`;
+S('btnNext').disabled = true;
+S('btnSame').disabled = true;
+});
+
+socket.on('opponentAction', data => {
+oppActionVal = data.action;
+const theirs = data.action === 'same' ? '认为同义' : '下一轮';
+S('actionStatus').innerHTML = myActionVal
+? `双方都已选择，判定中...`
+: `对方选择了：<b>${theirs}</b>`;
+});
+
+socket.on('newRound', data => {
+currentRound = data.round;
+S('roundNum').textContent = currentRound;
+renderPrevWords(data.previousWords, 'prevBanner');
+resetGuessing();
+});
+
+socket.on('gameRestart', data => {
+currentRound = 1;
+S('roundNum').textContent = 1;
+S('prevBanner').classList.add('hidden');
+resetGuessing();
+show('screen-game');
+});
+
+socket.on('victory', data => {
+const h = data.history;
+S('recordMeta').textContent = `房间 ${data.roomId} · 共 ${h.length} 轮 · ${today()}`;
+const body = S('recordBody');
+body.innerHTML = '';
+h.forEach((item, i) => {
+const isWin = i === h.length - 1;
+const tr = document.createElement('tr');
+tr.innerHTML = `<td style="color:#9ca3af;font-size:12px">第${item.round}轮</td>
+<td class="wp1">${item.player1}</td>
+<td class="mid ${isWin ? 'win' : ''}">${isWin ? '✓' : '×'}</td>
+<td class="wp2">${item.player2}</td>`;
+body.appendChild(tr);
+});
+show('screen-victory');
+});
+
+socket.on('rejoined', data => {
+role = data.role;
+currentRound = data.round;
+if (data.phase === 'waiting') {
+S('waitCode').textContent = roomId;
+show('screen-waiting');
+return;
+}
+if (data.phase === 'guessing') {
+hasSubmitted = data.myGuess !== null;
+oppSubmitted = data.opponentSubmitted;
+S('roundNum').textContent = data.round;
+renderPrevWords(data.previousWords, 'prevBanner');
+if (!data.previousWords) S('prevBanner').classList.add('hidden');
+S('guessInput').value = data.myGuess || '';
+S('guessInput').disabled = hasSubmitted;
+S('btnSubmit').disabled = hasSubmitted;
+S('guessStatus').innerHTML = `你是 <span style="font-weight:700;color:${role==='player1' ? '#7c3aed' : '#06b6d4'}">${myLabel()}</span>`;
+S('oppStatus').innerHTML = oppSubmitted ? `<span class="tag">对方已提交</span>` : '';
+S('view-guessing').classList.remove('hidden');
+S('view-result').classList.add('hidden');
+show('screen-game');
+return;
+}
+if (data.phase === 'result') {
+const last = data.history[data.history.length - 1];
+myActionVal = data.myAction;
+oppActionVal = data.opponentAction;
+showResult(data.round, last.player1, last.player2);
+renderHistory(data.history);
+if (myActionVal) {
+S('btnNext').disabled = true;
+S('btnSame').disabled = true;
+const mine = myActionVal === 'same' ? '认为同义' : '下一轮';
+S('actionStatus').innerHTML = `你已选：<b>${mine}</b>${oppActionVal ? '' : '，等待对方...'}`;
+}
+if (oppActionVal) {
+const theirs = oppActionVal === 'same' ? '认为同义' : '下一轮';
+if (!myActionVal) S('actionStatus').innerHTML = `对方选择了：<b>${theirs}</b>`;
+}
+show('screen-game');
+return;
+}
+if (data.phase === 'finished') {
+const last = data.history[data.history.length - 1];
+S('recordMeta').textContent = `房间 ${roomId} · 共 ${data.history.length} 轮 · ${today()}`;
+const body = S('recordBody');
+body.innerHTML = '';
+data.history.forEach((item, i) => {
+const isWin = i === data.history.length - 1;
+const tr = document.createElement('tr');
+tr.innerHTML = `<td style="color:#9ca3af;font-size:12px">第${item.round}轮</td>
+<td class="wp1">${item.player1}</td>
+<td class="mid ${isWin ? 'win' : ''}">${isWin ? '✓' : '×'}</td>
+<td class="wp2">${item.player2}</td>`;
+body.appendChild(tr);
+});
+show('screen-victory');
+return;
+}
+});
+
+socket.on('opponentReconnected', () => {
+toast('对方已回来');
+});
+
+socket.on('error', msg => {
+localStorage.removeItem('sw_room');
+localStorage.removeItem('sw_role');
+toast(msg);
+show('screen-home');
+});
+
+function today() {
+const d = new Date();
+return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+}
+
+// ===== 自动重连 =====
+const savedRoom = localStorage.getItem('sw_room');
+const savedRole = localStorage.getItem('sw_role');
+if (savedRoom && savedRole) {
+roomId = savedRoom;
+role = savedRole;
+show('screen-game'); // 先显示游戏页，等 rejoin 填充
+socket.emit('rejoin', { roomId, role });
+}
+</script></body>
+</html>
